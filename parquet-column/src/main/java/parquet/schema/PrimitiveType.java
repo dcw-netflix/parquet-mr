@@ -486,7 +486,7 @@ public final class PrimitiveType extends Type {
 
   @Override
   protected Type union(Type toMerge) {
-    if (!toMerge.isPrimitive() || !primitive.equals(toMerge.asPrimitiveType().getPrimitiveTypeName())) {
+    if (!toMerge.isPrimitive()) {
       throw new IncompatibleSchemaModificationException("can not merge type " + toMerge + " into " + this);
     }
     Types.PrimitiveBuilder<PrimitiveType> builder = Types.primitive(
