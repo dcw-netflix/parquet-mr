@@ -17,6 +17,7 @@ package parquet.pig;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.apache.pig.data.DataType.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -193,6 +194,58 @@ public class TestParquetLoader {
         assertTrue(t.isNull(2));
     }
   }  
+  
+  @Test
+  public void testTypePersuasion() throws Exception {
+    PigServer pigServer = new PigServer(ExecType.LOCAL); 
+    pigServer.setValidateEachStatement(true);
+    String out = "target/out";
+    int rows = 10;
+    Data data = Storage.resetData(pigServer);
+    List<Tuple> list = new ArrayList<Tuple>();
+    for (int i = 0; i < rows; i++) {
+      list.add(Storage.tuple(i, (long)i, (float)i, (double)i, Integer.toString(i), Boolean.TRUE));
+    }
+    data.set("in", "i:int, l:long, f:float, d:double, s:chararray, b:boolean", list );
+    pigServer.setBatchOn();
+    pigServer.registerQuery("A = LOAD 'in' USING mock.Storage();");
+    pigServer.deleteFile(out);
+    pigServer.registerQuery("Store A into '"+out+"' using " + ParquetStorer.class.getName()+"();");
+    pigServer.executeBatch();
+      
+    List<Tuple> actualList = null;
+     
+    byte [] types = { INTEGER, LONG, FLOAT, DOUBLE, CHARARRAY, BOOLEAN };
+    
+    //Test extracting values using each type.
+    for(int i=0; i<types.length; i++) {
+      String query = "B = LOAD '" + out + "' using " + ParquetLoader.class.getName()+
+        "('i:" + DataType.findTypeName(types[i%types.length])+"," +
+        "  l:" + DataType.findTypeName(types[(i+1)%types.length]) +"," +
+        "  f:" + DataType.findTypeName(types[(i+2)%types.length]) +"," +
+        "  d:" + DataType.findTypeName(types[(i+3)%types.length]) +"," +
+        "  s:" + DataType.findTypeName(types[(i+4)%types.length]) +"," +
+        "b:boolean');";
+      
+      System.out.println("Query: " + query);
+      pigServer.registerQuery(query);
+      pigServer.registerQuery("STORE B into 'out"+i+"' using mock.Storage();");
+      pigServer.executeBatch();
+
+      actualList = data.get("out" + i);
+
+      assertEquals(rows, actualList.size());
+      for(Tuple t : actualList) {
+          assertTrue(t.getType(0) == types[i%types.length]);
+          assertTrue(t.getType(1) == types[(i+1)%types.length]);
+          assertTrue(t.getType(2) == types[(i+2)%types.length]);
+          assertTrue(t.getType(3) == types[(i+3)%types.length]);
+          assertTrue(t.getType(4) == types[(i+4)%types.length]);
+          assertTrue(t.getType(5) == BOOLEAN);
+      }
+    }
+    
+  }
   
   @Test
   public void testRead() {

@@ -440,12 +440,12 @@ public class TupleConverter extends GroupConverter {
 
     @Override
     final public void addInt(int value) {
-      parent.add((long)value);
+      parent.add(value);
     }
 
     @Override
     public void addLong(long value) {
-      parent.add(value);
+      parent.add((int)value);
     }
 
     @Override
