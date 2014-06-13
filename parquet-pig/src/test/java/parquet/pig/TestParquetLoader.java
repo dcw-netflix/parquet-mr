@@ -225,7 +225,7 @@ public class TestParquetLoader {
         "  f:" + DataType.findTypeName(types[(i+2)%types.length]) +"," +
         "  d:" + DataType.findTypeName(types[(i+3)%types.length]) +"," +
         "  s:" + DataType.findTypeName(types[(i+4)%types.length]) +"," +
-        "b:boolean');";
+        "  b:" + DataType.findTypeName(types[(i+5)%types.length]) +"');";
       
       System.out.println("Query: " + query);
       pigServer.registerQuery(query);
@@ -241,7 +241,7 @@ public class TestParquetLoader {
           assertTrue(t.getType(2) == types[(i+2)%types.length]);
           assertTrue(t.getType(3) == types[(i+3)%types.length]);
           assertTrue(t.getType(4) == types[(i+4)%types.length]);
-          assertTrue(t.getType(5) == BOOLEAN);
+          assertTrue(t.getType(5) == types[(i+5)%types.length]);
       }
     }
     
