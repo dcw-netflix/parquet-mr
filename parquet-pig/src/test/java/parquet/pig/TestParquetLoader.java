@@ -15,15 +15,10 @@
  */
 package parquet.pig;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.apache.pig.data.DataType.*;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.pig.ExecType;
 import org.apache.pig.LoadPushDown.RequiredField;
@@ -33,11 +28,17 @@ import org.apache.pig.builtin.PigStorage;
 import org.apache.pig.builtin.mock.Storage;
 import org.apache.pig.builtin.mock.Storage.Data;
 import org.apache.pig.data.DataType;
+import static org.apache.pig.data.DataType.*;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertTrue;
 import org.junit.Ignore;
 import org.junit.Test;
+import static parquet.hadoop.ParquetInputFormat.STRICT_TYPE_CHECKING;
 
 public class TestParquetLoader {
   @Test
@@ -213,6 +214,8 @@ public class TestParquetLoader {
     pigServer.registerQuery("Store A into '"+out+"' using " + ParquetStorer.class.getName()+"();");
     pigServer.executeBatch();
       
+    pigServer.registerQuery("SET " + STRICT_TYPE_CHECKING + " false;");
+    
     List<Tuple> actualList = null;
      
     byte [] types = { INTEGER, LONG, FLOAT, DOUBLE, CHARARRAY, BOOLEAN };
